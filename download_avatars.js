@@ -2,14 +2,19 @@ var request = require('request');
 var token = require('./secrets.js');
 var fs = require('fs');
 
-console.log('Welcome to the GitHub Avatar Downloader!');
+var owner = process.argv[2];  //argv 2/3 because 0 and 1 are arguments to the shell itself. further elements are arguments to the command line
+var repo = process.argv[3];
 
 function getRepoContributors(repoOwner, repoName, cb) {
+  if (!owner || !repo) {
+    console.log("Invalid request. Please submit the username of the Github owner first, and the name of the repo second")
+  }
+  else {
   var options = {
     url: `https://api.github.com/repos/${repoOwner}/${repoName}/contributors`,
     headers: {
       'User-Agent': 'request',
-      'Authorization': token
+      'Authorization': token                    //cb = callback function to work with results of JSON parse
     }
   };
 
@@ -17,6 +22,7 @@ function getRepoContributors(repoOwner, repoName, cb) {
     var jsonObject = JSON.parse(body);
     cb(err, jsonObject);
   });
+  }
 }
 
 
@@ -41,7 +47,7 @@ function downloadImageByURL(url, filePath) {
 };
 
 
-getRepoContributors("jquery", "jquery", function(err, result) {
+getRepoContributors(owner, repo, function(err, result) {
   for (var i = 0; i < result.length; i++) {
     var downloadPath = './avatars/' + result[i].login + '.jpg';
     var avatarURL = result[i].avatar_url
